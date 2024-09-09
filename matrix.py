@@ -5,6 +5,7 @@ class Matrix:
         self.stride = (h * w, w, 1)
         if data is not None:
             assert len(data) == d * h * w
+            self.data = data
         else:
             self.data = [0 for _ in range(h) for _ in range(d) for _ in range(w)]
             self.data = [1 ,2 ,3 ,4]
@@ -33,8 +34,7 @@ class Matrix:
                     print("  strided:",strided_idx)
                     temp.append(self.data[strided_idx])
 
-        return temp
-
+        return Matrix(idx[2][1] - idx[2][0], idx[0][1] - idx[0][0], idx[1][1] - idx[1][0], temp)
     
     def __str__(self):
         return str(self.data)
@@ -44,4 +44,6 @@ class Matrix:
     
 m = Matrix(2, 2)
 print(m.__repr__())
-m[:, :1]
+m2 = m[:, :1]
+print(m2.__repr__())
+m2[:1, :, :]
