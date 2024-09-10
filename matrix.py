@@ -1,7 +1,10 @@
+import logging
+
+
 class Matrix:
     # 3d implemented with strided representation in row-major order
     # matrices are treated as depth-number of stacked 2d matrices
-    def __init__(self, d=1, h=1, w=1, data=None):
+    def __init__(self, d=1, h=1, w=1, data=None, verbose=False):
         self.shape = (d, h, w)
         self.size = d * h * w
         self.stride = (h * w, w, 1)
@@ -10,7 +13,8 @@ class Matrix:
             self.data = data
         else:
             self.data = [0 for _ in range(h) for _ in range(d) for _ in range(w)]
-            self.data = [1 ,2 ,3 ,4]
+            # self.data = [1 ,2 ,3 ,4]
+        self.verbose = verbose
 
 
     def __getitem__(self, idx):
@@ -24,14 +28,14 @@ class Matrix:
                 idx[i] = (start, stop)
             else:
                 idx[i] = (idx[i], idx[i] + 1)
-        print("idx:", idx)
+        if self.verbose: print(f"idx: {idx}")
             
         temp = []
-        print("stride:", self.stride)
+        if self.verbose: print("stride:", self.stride)
         for d in range(idx[0][0], idx[0][1]):
             for h in range(idx[1][0], idx[1][1]):
                 for w in range(idx[2][0], idx[2][1]):
-                    print("  d, h, w:", d, h, w)
+                    if self.verbose: print("  d, h, w:", d, h, w)
                     strided_idx = self._get_strided(d, h, w)
                     temp.append(self.data[strided_idx])
 
@@ -42,7 +46,7 @@ class Matrix:
 
     def _get_strided(self, d, h, w):
         strided_idx = d * self.stride[0] + h * self.stride[1] + w * self.stride[2]
-        print("  strided:", strided_idx)
+        if self.verbose: print("  strided:", strided_idx)
         return strided_idx
     
     def __setitem__(self, idx, item):
@@ -55,12 +59,13 @@ class Matrix:
         assert self.shape[0] == other.shape[0], f"incompatible depth shapes for matmul: {self.shape[0]} != {other.shape[0]}"
 
         temp = Matrix(self.shape[0], self.shape[1], other.shape[2])
+        # print(temp.__repr__())
         for d in range(self.shape[0]):
             for h in range(self.shape[1]):
                 for w in range(self.shape[2]):
                     s = 0
                     for i in range(self.shape[2]):
-                        print(d, h, w, i)
+                        if self.verbose: print(d, h, w, i)
                         s += self[d, h, i] * other[d, i, w]
                     
                     temp[d, h, w] = s
@@ -116,10 +121,10 @@ class Matrix:
 
     def __repr__(self):
         return "Matrix("+str(self.__dict__)+")"
-    
-m = Matrix(1, 2, 2)
-print()
+
+m = Matrix(1, 2, 2, [i for i in range(1, 5)])
 print(m @ m)
-print()
-# m2 = Matrix(1, 3, 3, [i for i in range(1, 10)])
-# print(m2 @ m2)
+m2 = Matrix(1, 3, 3, [i for i in range(1, 10)])
+print(m2 @ m2)
+m3 = Matrix(1, 3, 2, [i for i in range(1, 7)], verbose=True)
+print(m2 @ m3)
