@@ -18,6 +18,7 @@ class Matrix:
 
 
     def __getitem__(self, idx):
+        if self.verbose: print(f"__getitem__ idx={idx} for {self.__repr__()}")
         idx = list(idx) + [0 for _ in range(3-len(idx))]
 
         for i in range(len(idx)):
@@ -59,10 +60,10 @@ class Matrix:
         assert self.shape[0] == other.shape[0], f"incompatible depth shapes for matmul: {self.shape[0]} != {other.shape[0]}"
 
         temp = Matrix(self.shape[0], self.shape[1], other.shape[2])
-        # print(temp.__repr__())
+        if self.verbose: print(f"matmul on self={self.shape}, other={other.shape}")
         for d in range(self.shape[0]):
             for h in range(self.shape[1]):
-                for w in range(self.shape[2]):
+                for w in range(other.shape[2]):
                     s = 0
                     for i in range(self.shape[2]):
                         if self.verbose: print(d, h, w, i)
@@ -122,9 +123,11 @@ class Matrix:
     def __repr__(self):
         return "Matrix("+str(self.__dict__)+")"
 
+
 m = Matrix(1, 2, 2, [i for i in range(1, 5)])
 print(m @ m)
-m2 = Matrix(1, 3, 3, [i for i in range(1, 10)])
+m2 = Matrix(1, 3, 3, [i for i in range(1, 10)], verbose=False)
 print(m2 @ m2)
-m3 = Matrix(1, 3, 2, [i for i in range(1, 7)], verbose=True)
-print(m2 @ m3)
+m3 = Matrix(1, 3, 2, [i for i in range(1, 7)], verbose=False)
+m4 = m2 @ m3
+print(m4[:, 1, :])
