@@ -1,3 +1,5 @@
+import numpy as np
+
 class Matrix:
     # 3d implemented with strided representation in row-major order
     # matrices are treated as depth-number of stacked 2d matrices
@@ -71,61 +73,48 @@ class Matrix:
 
         return temp
     
+    def _matrix_matrix_op(self, other, op):
+        assert self.shape == other.shape, f"can only element-wise operate same sized matrices: {self.shape} != {other.shape}" 
+
+        temp = Matrix(self.shape[0], self.shape[1], self.shape[2])
+        for d in range(self.shape[0]):
+            for h in range(self.shape[1]):
+                for w in range(self.shape[2]):
+                    temp[d, h, w] = op(self[d, h, w], other[d, h, w])
+
+        return temp
+    
     def __mul__(self, other):
         assert self.shape == other.shape, f"can only scalar multiply same sized matrices: {self.shape} != {other.shape}" 
-
-        temp = Matrix(self.shape[0], self.shape[1], self.shape[2])
-        for d in range(self.shape[0]):
-            for h in range(self.shape[1]):
-                for w in range(self.shape[2]):
-                    temp[d, h, w] = self[d, h, w] * other[d, h, w]
-
-        return temp 
-    
-    def __div__(self, other):
-        assert self.shape == other.shape, f"can only scalar multiply same sized matrices: {self.shape} != {other.shape}" 
-
-        temp = Matrix(self.shape[0], self.shape[1], self.shape[2])
-        for d in range(self.shape[0]):
-            for h in range(self.shape[1]):
-                for w in range(self.shape[2]):
-                    temp[d, h, w] = self[d, h, w] / other[d, h, w]
-
-        return temp 
+        return self._matrix_matrix_op(other, lambda x, y: x * y)
     
     def __add__(self, other):
-        assert self.shape == other.shape, f"can only scalar multiply same sized matrices: {self.shape} != {other.shape}" 
-
-        temp = Matrix(self.shape[0], self.shape[1], self.shape[2])
-        for d in range(self.shape[0]):
-            for h in range(self.shape[1]):
-                for w in range(self.shape[2]):
-                    temp[d, h, w] = self[d, h, w] + other[d, h, w]
-
-        return temp 
+        assert self.shape == other.shape, f"can only scalar add same sized matrices: {self.shape} != {other.shape}" 
+        return self._matrix_matrix_op(other, lambda x, y: x + y)
     
     def __sub__(self, other):
-        assert self.shape == other.shape, f"can only scalar multiply same sized matrices: {self.shape} != {other.shape}" 
-
-        temp = Matrix(self.shape[0], self.shape[1], self.shape[2])
-        for d in range(self.shape[0]):
-            for h in range(self.shape[1]):
-                for w in range(self.shape[2]):
-                    temp[d, h, w] = self[d, h, w] - other[d, h, w]
-
-        return temp 
-
+        assert self.shape == other.shape, f"can only scalar subtract same sized matrices: {self.shape} != {other.shape}" 
+        return self._matrix_matrix_op(other, lambda x, y: x - y)
+    
+    def __truediv__(self, other):
+        assert self.shape == other.shape, f"can only scalar divide same sized matrices: {self.shape} != {other.shape}" 
+        return self._matrix_matrix_op(other, lambda x, y: x / y)
+    
+    def __floordiv__(self, other):
+        assert self.shape == other.shape, f"can only scalar floor divide same sized matrices: {self.shape} != {other.shape}" 
+        return self._matrix_matrix_op(other, lambda x, y: x // y)
+    
     def __str__(self):
         return str(self.data)
 
     def __repr__(self):
         return "Matrix("+str(self.__dict__)+")"
 
-
-m = Matrix(1, 2, 2, [i for i in range(1, 5)])
-print(m @ m)
-m2 = Matrix(1, 3, 3, [i for i in range(1, 10)], verbose=False)
-print(m2 @ m2)
-m3 = Matrix(1, 3, 2, [i for i in range(1, 7)], verbose=False)
-m4 = m2 @ m3
-print(m4[:, 1, :])
+if __name__ == "__main__":
+    m = Matrix(1, 2, 2, [i for i in range(1, 5)])
+    print(m @ m)
+    m2 = Matrix(1, 3, 3, [i for i in range(1, 10)], verbose=False)
+    print(m2 @ m2)
+    m3 = Matrix(1, 3, 2, [i for i in range(1, 7)], verbose=False)
+    m4 = m2 @ m3
+    print(m4[:, 1, :])
