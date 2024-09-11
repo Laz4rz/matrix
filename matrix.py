@@ -1,6 +1,3 @@
-import logging
-
-
 class Matrix:
     # 3d implemented with strided representation in row-major order
     # matrices are treated as depth-number of stacked 2d matrices
@@ -19,7 +16,8 @@ class Matrix:
 
     def __getitem__(self, idx):
         if self.verbose: print(f"__getitem__ idx={idx} for {self.__repr__()}")
-        idx = list(idx) + [0 for _ in range(3-len(idx))]
+        idx = list(idx) if isinstance(idx, tuple) else [idx]
+        idx = list(idx) + [slice(None, None) for _ in range(3-len(idx))]
 
         for i in range(len(idx)):
             if isinstance(idx[i], slice):
