@@ -1,5 +1,18 @@
+import os
+
+multithreaded = True
+if not multithreaded:
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+    os.environ["MKL_NUM_THREADS"] = "1"
+    os.environ["OMP_NUM_THREADS"] = "1"
+print("Running with multithreaded=", multithreaded)
+print("$OPENBLAS_NUM_THREADS:", os.environ.get("OPENBLAS_NUM_THREADS"))
+print("$MKL_NUM_THREADS:", os.environ.get("MKL_NUM_THREADS"))
+print("$OMP_NUM_THREADS:", os.environ.get("OMP_NUM_THREADS"))
+
 import numpy as np
 import time
+
 
 def benchmark_matmul(M, N, K, num_iterations):
     np.random.seed(0)
@@ -7,11 +20,11 @@ def benchmark_matmul(M, N, K, num_iterations):
     B = np.random.rand(K, N).astype(np.float32)
 
     for _ in range(num_iterations):
-        start_time = time.time()
+        start_time = time.perf_counter()
 
         C = np.matmul(A, B)
 
-        end_time = time.time()
+        end_time = time.perf_counter()
 
         iteration_time = end_time - start_time
         flops = 2.0 * M * N * K
@@ -22,8 +35,6 @@ def benchmark_matmul(M, N, K, num_iterations):
 def main():
     sizes = [(128, 128, 128), (512, 512, 512), (1024, 1024, 1024)]
     num_iterations = 100
-
-    print("m,n,k,time,flops")
 
     max_flops = 0
     max_config = None
@@ -42,7 +53,7 @@ def main():
             else:
                 results[(M, N, K)] = [flops]
 
-    print("\nAverage FLOPS:")
+    print(f"\nAverage FLOPS | (10x100 iterations) | multithreaded={multithreaded}:")
     for config, flops in results.items():
         avg_flops = sum(flops) / len(flops)
         std_flops = np.std(flops)
