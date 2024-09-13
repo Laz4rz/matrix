@@ -105,6 +105,11 @@ class Matrix:
         return self._matrix_matrix_op(other, lambda x, y: x // y)
     
     def __str__(self):
+        # repr = ""
+        # for d in range(self.shape[0]):
+        #     for h in range(self.shape[1]):
+        #         repr += f"{self[d, h, :].data}\n"
+        # return repr
         return str(self.data)
 
     def __repr__(self):

@@ -24,7 +24,7 @@ A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), 
 
 #### Naive
 - Python (matrix.py): ~0.0004 GFLOPS (Ryzen 3600), ~0.0010 (M2 Pro)
-- C      (matrix.c):  
+- C      (matrix.c): ~0.31 GFLOPS
 
 ## Python
 
