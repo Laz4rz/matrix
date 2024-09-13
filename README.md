@@ -48,4 +48,6 @@ python -m unittest tests.test_matrix.TestMatrix
 
 - great read: https://salykova.github.io/matmul-cpu
 - obvious read: https://siboehm.com/articles/22/CUDA-MMM
-- https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf
+- Efficient matmul on CPU: https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf
+- SIMD intro: https://www.codeproject.com/Articles/874396/Crunching-Numbers-with-AVX-and-AVX
+- ARM instructions (suppossedly M series too): https://developer.arm.com/documentation/dui0801/l/A64-SIMD-Vector-Instructions/A64-SIMD-Vector-instructions-in-alphabetical-order
