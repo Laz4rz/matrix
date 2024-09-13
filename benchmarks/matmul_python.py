@@ -1,15 +1,17 @@
 import numpy as np
 import time
 
-from matrix import Matrix
+import sys
+sys.path.append("..")
+from matrix import matrix
 
 
 def benchmark_matmul(M, N, K, num_iterations):
     np.random.seed(0)
     A = np.random.rand(M, K).astype(np.float32).flatten()
     B = np.random.rand(K, N).astype(np.float32).flatten()
-    A = Matrix(1, M, K, list(A))
-    B = Matrix(1, K, N, list(B))
+    A = matrix.Matrix(1, M, K, list(A))
+    B = matrix.Matrix(1, K, N, list(B))
 
     for _ in range(num_iterations):
         start_time = time.perf_counter()
@@ -27,7 +29,7 @@ def benchmark_matmul(M, N, K, num_iterations):
 
 def main():
     sizes = [(128, 128, 128), (512, 512, 512), (1024, 1024, 1024)]
-    num_iterations = 100
+    num_iterations = 5
 
     max_flops = 0
     max_config = None

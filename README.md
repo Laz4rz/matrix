@@ -2,10 +2,29 @@
 
 Picked the mantle to implement matrices and matmul in Python, C, and CUDA. The inspiration is [here](https://github.com/spikedoanz/matmul). 
 
+A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), or where does these GEMM something names come from?
+![alt text](images/matmul_naming.png)
+
+
 ## Performance
 
-- Python (naive matrix.py): ~0.0004 GFLOPS
-- C      (naive )
+#### Baseline 
+- Numpy (multithreaded, M2 Pro): 
+```
+(128, 128, 128): 57.52 +/- 28.71 GFLOPS
+(512, 512, 512): 253.81 +/- 25.85 GFLOPS
+(1024, 1024, 1024): 274.68 +/- 56.40 GFLOPS
+```
+- Numpy (single thread, M2 Pro):
+```
+(128, 128, 128): 92.89 +/- 9.58 GFLOPS
+(512, 512, 512): 100.50 +/- 8.87 GFLOPS
+(1024, 1024, 1024): 104.77 +/- 2.32 GFLOPS
+```
+
+#### Naive
+- Python (matrix.py): ~0.0004 GFLOPS (Ryzen 3600), ~0.0010 (M2 Pro)
+- C      (matrix.c):  
 
 ## Python
 
@@ -29,3 +48,4 @@ python -m unittest tests.test_matrix.TestMatrix
 
 - great read: https://salykova.github.io/matmul-cpu
 - obvious read: https://siboehm.com/articles/22/CUDA-MMM
+- https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf

@@ -79,7 +79,7 @@ void matmul(Matrix *a, Matrix *b, Matrix *res) {
                 for (int i = 0; i < a->cols; i++) {
                     temp += get(a, d, r, i) * get(b, d, i, c);
                 }
-                printf("temp: %f\n", temp);
+                // printf("temp: %f\n", temp);
                 set(res, d, r, c, temp);
 
             }
