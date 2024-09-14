@@ -1,6 +1,7 @@
 import unittest
 
 from matrix import Matrix
+from strassens import strassens, strassens_dnq
 
 
 class TestMatrix(unittest.TestCase):
@@ -59,6 +60,47 @@ class TestMatrix(unittest.TestCase):
             result = m11 @ m12
             self.assertEqual(result.data, [3, 4, 5, 9, 14, 19, 15, 24, 33, 99, 112, 125, 129, 146, 163, 159, 180, 201])
             self.assertEqual(result.shape, (2, 3, 3))
+
+    def test_matrix_strassens(self):
+        # matrix x matrix (2D square)
+        with self.subTest("matrix x matrix (2D square)"):
+            m5 = Matrix(1, 4, 4, [i for i in range(16)])
+            m6 = Matrix(1, 4, 4, [i for i in range(16)])
+            result = strassens(m5, m6)
+            self.assertEqual(result.data, [ 56,  62,  68,  74, 152, 174, 196, 218, 248, 286, 324, 362, 344,
+       398, 452, 506])
+            self.assertEqual(result.shape, (1, 4, 4))
+
+        # matrix x matrix (3D square)
+        with self.subTest("matrix x matrix (3D square)"):
+            m9 = Matrix(2, 4, 4, [i for i in range(32)])
+            m10 = Matrix(2, 4, 4, [i for i in range(32)])
+            result = strassens(m9, m10)
+            self.assertEqual(result.data, [  56,   62,   68,   74,  152,  174,  196,  218,  248,  286,  324,
+        362,  344,  398,  452,  506, 1560, 1630, 1700, 1770, 1912, 1998,
+       2084, 2170, 2264, 2366, 2468, 2570, 2616, 2734, 2852, 2970])
+            self.assertEqual(result.shape, (2, 4, 4))
+
+
+    def test_matrix_strassens_dnq(self):
+        # matrix x matrix (2D square)
+        with self.subTest("matrix x matrix (2D square)"):
+            m5 = Matrix(1, 4, 4, [i for i in range(16)])
+            m6 = Matrix(1, 4, 4, [i for i in range(16)])
+            result = strassens(m5, m6)
+            self.assertEqual(result.data, [ 56,  62,  68,  74, 152, 174, 196, 218, 248, 286, 324, 362, 344,
+       398, 452, 506])
+            self.assertEqual(result.shape, (1, 4, 4))
+
+        # matrix x matrix (3D square)
+        with self.subTest("matrix x matrix (3D square)"):
+            m9 = Matrix(2, 4, 4, [i for i in range(32)])
+            m10 = Matrix(2, 4, 4, [i for i in range(32)])
+            result = strassens(m9, m10)
+            self.assertEqual(result.data, [  56,   62,   68,   74,  152,  174,  196,  218,  248,  286,  324,
+        362,  344,  398,  452,  506, 1560, 1630, 1700, 1770, 1912, 1998,
+       2084, 2170, 2264, 2366, 2468, 2570, 2616, 2734, 2852, 2970])
+            self.assertEqual(result.shape, (2, 4, 4))
 
 
 if __name__ == "__main__":

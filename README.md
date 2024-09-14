@@ -24,7 +24,9 @@ A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), 
 
 #### Naive
 - Python (matrix.py): ~0.0004 GFLOPS (Ryzen 3600), ~0.0010 (M2 Pro)
-- C      (matrix.c): ~0.31 GFLOPS
+- C      (matrix.c): 
+  - M2 Pro: ~0.31 GFLOPS (-O0), higher optimization breaks benchmarking
+  - Ryzen 3600: ~0.13 (-O0), ~0.55 (-O1), ~1.00-1.6 for small and 0.33 for large (-O2), ~1.9 small, 0.9 medium, 0.33 for large (-O3)
 
 ## Python
 
@@ -43,6 +45,23 @@ python -m unittest tests.test_matrix.TestMatrix
 
 ## C
 
+Same as python, 3D row-major strided representation matrices. Matrix is built with a `Matrix` struct. To access, set and matmul use: `get`, `set`, and `matmul`. To create a Matrix:
+
+```C
+Matrix A;
+Matrix B;
+Matrix C;
+
+allocate_matrix_random(&A, 1, M, N);
+allocate_matrix_consecutive(&B, 1, N, K);
+allocate_matrix_zeros(&C, 1, M, K);
+```
+
+## Strassens Algorithm for Matrix Multiplication (or how to cheat complexity with clever algebra)
+
+So the typical time complexity of matrix multiplication is $O(n^3)$, divide and conquer than Strassens is based on is also $O(n^3)$. What is the catch then? Turns out that we can be smart about the algebraic computations, and reduce the number of recursive calls from 8 to 7, bringing the time complexity down to $O(n^(2.81))$.
+
+![alt text](images/strassens.png)
 
 ## Scratch
 

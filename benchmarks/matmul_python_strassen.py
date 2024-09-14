@@ -4,6 +4,7 @@ import time
 import sys
 sys.path.append("..")
 from matrix import matrix
+from strassens import strassens
 
 
 def benchmark_matmul(M, N, K, num_iterations):
