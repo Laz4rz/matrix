@@ -92,7 +92,7 @@ void matmul(Matrix *a, Matrix *b, Matrix *res) {
                 
                 float temp = 0.0f;
                 for (int i = 0; i < a->cols; i++) {
-                    temp += a->data[d * a->rows * a->cols + r * a->cols + c] * b->data[d * b->rows * b->cols + r * b->cols + c];
+                    temp += a->data[d * a->rows * a->cols + r * a->cols + i] * b->data[d * b->rows * b->cols + i * b->cols + c];
                 }
                 // printf("temp: %f\n", temp);
                 set(res, d, r, c, temp);

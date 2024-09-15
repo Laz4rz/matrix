@@ -92,7 +92,7 @@ void matmul(Matrix *a, Matrix *b, Matrix *res) {
                 
                 float temp = 0.0f;
                 for (int i = 0; i < a->cols; i++) {
-                    temp += get(a, d, r, i) * get(b, d, i, c);
+                    temp += a->data[d * a->rows * a->cols + r * a->cols + i] * b->data[d * b->rows * b->cols + i * b->cols + c];
                 }
                 // printf("temp: %f\n", temp);
                 set(res, d, r, c, temp);
@@ -106,7 +106,7 @@ void add(Matrix *a, Matrix *b, Matrix *res) {
     for (int d = 0; d < a->depth; d++) {
         for (int r = 0; r < a->rows; r++) {
             for (int c = 0; c < a->cols; c++) {
-                set(res, d, r, c, get(a, d, r, c) + get(b, d, r, c));
+                res->data[d * res->rows * res->cols + r * res->cols + c] = a->data[d * a->rows * a->cols + r * a->cols + c] + b->data[d * b->rows * b->cols + r * b->cols + c];
             }
         }
     }
@@ -116,7 +116,7 @@ void sub(Matrix *a, Matrix *b, Matrix *res) {
     for (int d = 0; d < a->depth; d++) {
         for (int r = 0; r < a->rows; r++) {
             for (int c = 0; c < a->cols; c++) {
-                set(res, d, r, c, get(a, d, r, c) - get(b, d, r, c));
+                res->data[d * res->rows * res->cols + r * res->cols + c] = a->data[d * a->rows * a->cols + r * a->cols + c] - b->data[d * b->rows * b->cols + r * b->cols + c];
             }
         }
     }
@@ -127,10 +127,10 @@ void split(Matrix *m, Matrix *a11, Matrix *a12, Matrix *a21, Matrix *a22) {
     int c = m->cols / 2;
     for (int i = 0; i < r; i++) {
         for (int j = 0; j < c; j++) {
-            set(a11, 0, i, j, get(m, 0, i, j));
-            set(a12, 0, i, j, get(m, 0, i, j + c));
-            set(a21, 0, i, j, get(m, 0, i + r, j));
-            set(a22, 0, i, j, get(m, 0, i + r, j + c));
+            a11->data[0 * a11->rows * a11->cols + i * a11->cols + j] = m->data[0 * m->rows * m->cols + i * m->cols + j];
+            a12->data[0 * a12->rows * a12->cols + i * a12->cols + j] = m->data[0 * m->rows * m->cols + i * m->cols + j + c];
+            a21->data[0 * a21->rows * a21->cols + i * a21->cols + j] = m->data[0 * m->rows * m->cols + i + r * m->cols + j];
+            a22->data[0 * a22->rows * a22->cols + i * a22->cols + j] = m->data[0 * m->rows * m->cols + i + r * m->cols + j + c];
         }
     }
 }
@@ -140,17 +140,17 @@ void combine(Matrix *a11, Matrix *a12, Matrix *a21, Matrix *a22, Matrix *m) {
     int c = m->cols / 2;
     for (int i = 0; i < r; i++) {
         for (int j = 0; j < c; j++) {
-            set(m, 0, i, j, get(a11, 0, i, j));
-            set(m, 0, i, j + c, get(a12, 0, i, j));
-            set(m, 0, i + r, j, get(a21, 0, i, j));
-            set(m, 0, i + r, j + c, get(a22, 0, i, j));
+            m->data[0 * m->rows * m->cols + i * m->cols + j] = a11->data[0 * a11->rows * a11->cols + i * a11->cols + j];
+            m->data[0 * m->rows * m->cols + i * m->cols + j + c] = a12->data[0 * a12->rows * a12->cols + i * a12->cols + j];
+            m->data[0 * m->rows * m->cols + i + r * m->cols + j] = a21->data[0 * a21->rows * a21->cols + i * a21->cols + j];
+            m->data[0 * m->rows * m->cols + i + r * m->cols + j + c] = a22->data[0 * a22->rows * a22->cols + i * a22->cols + j];
         }
     }
 }
 
 void strassens(Matrix *a, Matrix *b, Matrix *res) {
-    if (a->rows == 1) {
-        set(res, 0, 0, 0, get(a, 0, 0, 0) * get(b, 0, 0, 0));
+    if (a->rows <= 64) {
+        matmul(a, b, res);
         return;
     }
 
@@ -261,9 +261,10 @@ int main() {
 
     combine(&a11, &a12, &a21, &a22, &m2);
 
+    print_matrix(&m);
     print_matrix(&m2);
 
-    strassens(&m, &m2, &res);
+    matmul(&m, &m2, &res);
 
     print_matrix(&res);
 
