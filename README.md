@@ -181,7 +181,7 @@ So the typical time complexity of matrix multiplication is $O(n^3)$, divide and 
 
 ![alt text](images/strassens.png)
 
-## Scratch
+## Reading
 
 - great read: https://salykova.github.io/matmul-cpu
 - obvious read: https://siboehm.com/articles/22/CUDA-MMM
@@ -189,3 +189,12 @@ So the typical time complexity of matrix multiplication is $O(n^3)$, divide and 
 - SIMD intro: https://www.codeproject.com/Articles/874396/Crunching-Numbers-with-AVX-and-AVX
 - ARM instructions (suppossedly M series too): https://developer.arm.com/documentation/dui0801/l/A64-SIMD-Vector-Instructions/A64-SIMD-Vector-instructions-in-alphabetical-order
 - amazing website as a whole: https://en.algorithmica.org/hpc/cpu-cache/associativity/
+
+## Scratch
+
+#### Cache
+- CPU has 2-3 Caches, L1 fastest, and smallest, L2...
+- L cache is extra fast, like few nanoseconds, while RAM access is ~100-200ns
+- Cache contains memory bits that your CPU thought would be useful to you (prefetcher), or you used recently
+- CPU check for the thing it needs in L1, then L2, L3, and RAM, if it goes up to RAM, then it fetches cache line/cache blocks, which are more than you needed, but take into account that if you needed this, you may need more from nearby, it gets places in one of L caches
+- Everytime CPU doesn't find something in the cache level, it's called a *Cache Miss*, if CPU finds it - *Cache Hit*, Cache Misses stack for each search, so if the thing is in none of L1-L3 caches, then you have 3 misses in one search
