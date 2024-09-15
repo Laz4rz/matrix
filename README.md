@@ -28,6 +28,11 @@ A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), 
   - M2 Pro: ~0.31 GFLOPS (-O0), higher optimization breaks benchmarking
   - Ryzen 3600: ~0.13 (-O0), ~0.55 (-O1), ~1.00-1.6 for small and 0.33 for large (-O2), ~1.9 small, 0.9 medium, 0.33 for large (-O3)
 
+#### Strassen:
+- C      (strassens.c):
+  - Ryzen 3600: ~0.43, 0.57, 0.65 GFLOPS (-O0), ~3.10, 3.45, 3.80 GFLOPS (-O1), ~3.80, 4.20, 4.90 GFLOPS (-O2)  
+
+
 ## Python
 
 Matrices are implemented using 3D row-major strided representation. To create a Matrix object:
@@ -56,6 +61,97 @@ allocate_matrix_random(&A, 1, M, N);
 allocate_matrix_consecutive(&B, 1, N, K);
 allocate_matrix_zeros(&C, 1, M, K);
 ```
+
+Naive benchmark:
+```
+gcc -o matmul benchmarks/matmul_c.c -O0; ./matmul
+```
+
+Strassen benchmark:
+```
+gcc -o strassen benchmarks/matmul_c_strassen.c -O0; ./strassen
+```
+
+Profiling:
+```
+gcc -pg -o strassen benchmarks/matmul_c_strassen.c -O0; ./strassen
+gprof strassens gmon.out
+```
+
+#### Python Brain
+
+Functions overhead will kill you. 
+
+Look at this `gprof` report (~0.13 GFLOPS):
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 68.36     13.57    13.57 2420113408     0.00     0.00  get
+ 17.88     17.12     3.55        3     1.18     6.61  matmul
+ 13.55     19.81     2.69 2421440512     0.00     0.00  strided_index
+  0.10     19.83     0.02  1327104     0.00     0.00  set
+  0.05     19.84     0.01        9     0.00     0.00  free_matrix
+  0.05     19.85     0.01                             _init
+  0.00     19.85     0.00        6     0.00     0.00  allocate_matrix_random
+  0.00     19.85     0.00        3     0.00     0.00  allocate_matrix_zeros
+```
+
+And now with strided index, setting, and getting hardcoded in sub, and add functions (0.45 GFLOPS):
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 99.06      5.26     5.26        3     1.75     1.76  matmul
+  0.56      5.29     0.03  1327104     0.00     0.00  set
+  0.19      5.30     0.01        6     0.00     0.00  allocate_matrix_random
+  0.19      5.31     0.01                             _init
+  0.00      5.31     0.00  1327104     0.00     0.00  strided_index
+  0.00      5.31     0.00        9     0.00     0.00  free_matrix
+  0.00      5.31     0.00        3     0.00     0.00  allocate_matrix_zeros
+```
+
+Bonkers.
+
+#### Fixing Strassen 
+
+Initial Naive (~0.02 GFLOPS)
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 26.63      7.95     7.95 593362726     0.00     0.00  add
+ 17.92     13.30     5.35 1132783389     0.00     0.00  allocate_matrix_zeros
+ 17.72     18.59     5.29 377594462     0.00     0.00  sub
+  9.65     21.47     2.88 107884132     0.00     0.00  split
+  7.05     23.57     2.10        3     0.70     9.85  strassens
+  6.60     25.55     1.97 647304798     0.00     0.00  get
+  4.29     26.82     1.28 323652399     0.00     0.00  set
+  4.02     28.02     1.20 1132783395     0.00     0.00  free_matrix
+  3.84     29.17     1.15 970957197     0.00     0.00  strided_index
+  1.24     29.54     0.37 53942066     0.00     0.00  combine
+  0.67     29.74     0.20                             _init
+  0.13     29.78     0.04                             matmul
+  0.12     29.82     0.04                             allocate_matrix_consecutive
+  0.07     29.84     0.02        6     0.00     0.00  allocate_matrix_random
+  0.05     29.85     0.01                             main
+```
+
+Defaulting to vanilla matmul for matrices smaller or equal 64 (0.48, 0.58, 0.65 GFLOPS)
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 85.04      3.07     3.07     2751     0.00     0.00  matmul
+  6.65      3.31     0.24     5038     0.00     0.00  add
+  2.77      3.41     0.10     3206     0.00     0.00  sub
+  2.49      3.50     0.09      916     0.00     0.00  split
+  1.66      3.56     0.06 11268096     0.00     0.00  set
+  0.83      3.59     0.03      458     0.00     0.00  combine
+  0.28      3.60     0.01 11268096     0.00     0.00  strided_index
+  0.28      3.61     0.01        6     0.00     0.00  allocate_matrix_random
+  0.00      3.61     0.00     9627     0.00     0.00  free_matrix
+  0.00      3.61     0.00     9621     0.00     0.00  allocate_matrix_zeros
+  0.00      3.61     0.00        3     0.00     1.20  strassens
 
 ## Strassens Algorithm for Matrix Multiplication (or how to cheat complexity with clever algebra)
 
