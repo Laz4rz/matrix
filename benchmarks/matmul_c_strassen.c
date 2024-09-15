@@ -18,7 +18,7 @@ void allocate_matrix_zeros(Matrix *m, int depth, int rows, int cols) {
     m->data = (float *)calloc(depth * rows * cols, sizeof(float));
     if (m->data == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        exit(1);  // Or handle the error appropriately
+        exit(1);
     }
 }
 
@@ -31,7 +31,7 @@ void allocate_matrix_random(Matrix *m, int depth, int rows, int cols) {
 
     if (m->data == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        exit(1);  // Or handle the error appropriately
+        exit(1); 
     }
 
     srand(time(NULL));
@@ -49,7 +49,7 @@ void allocate_matrix_consecutive(Matrix *m, int depth, int rows, int cols) {
 
     if (m->data == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        exit(1);  // Or handle the error appropriately
+        exit(1); 
     }
     
     for (int i = 0; i < m->length; i++) {
