@@ -1,6 +1,8 @@
 # matrix
 
-Picked the mantle to implement matrices and matmul in Python, C, and CUDA. The inspiration is [here](https://github.com/spikedoanz/matmul). 
+![alt text](images/matmul.jpg)
+
+Picked the mantle to implement matrices and matmul in Python, C, and CUDA. Then optimize the shit out of it. The inspiration is [here](https://github.com/spikedoanz/matmul). 
 
 A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), or where does these GEMM something names come from?
 ![alt text](images/matmul_naming.png)
