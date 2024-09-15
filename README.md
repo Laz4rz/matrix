@@ -160,6 +160,7 @@ Each sample counts as 0.01 seconds.
 ```
 
 Defaulting to vanilla matmul for matrices smaller or equal 64 (0.48, 0.58, 0.65 GFLOPS)
+```
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
  time   seconds   seconds    calls   s/call   s/call  name    
@@ -174,6 +175,7 @@ Each sample counts as 0.01 seconds.
   0.00      3.61     0.00     9627     0.00     0.00  free_matrix
   0.00      3.61     0.00     9621     0.00     0.00  allocate_matrix_zeros
   0.00      3.61     0.00        3     0.00     1.20  strassens
+```
 
 ## Strassens Algorithm for Matrix Multiplication (or how to cheat complexity with clever algebra)
 
