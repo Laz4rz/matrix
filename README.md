@@ -7,6 +7,11 @@ Picked the mantle to implement matrices and matmul in Python, C, and CUDA. Then 
 A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), or where does these GEMM something names come from?
 ![alt text](images/matmul_naming.png)
 
+## TODO
+- Tiled matmul
+- Multithreading
+- Vectorization with CPU intrinsics
+- CUDA
 
 ## Performance
 
