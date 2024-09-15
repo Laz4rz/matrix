@@ -143,61 +143,47 @@ void matmul_transpose(Matrix *a, Matrix *b, Matrix *res) {
 
 
 int main() {
-    Matrix m;
-    allocate_matrix_random(&m, 1, 2, 2);
+    struct timespec start, end;
+    int sizes[][3] = {{128, 128, 128}, {512, 512, 512}, {1024, 1024, 1024}};
+    int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
+    int num_iterations = 10;
 
-    print_matrix(&m);
-    set(&m, 0, 0, 0, 1.0);
-    print_matrix(&m);
+    // srand(time(NULL));
 
-    Matrix n;
-    Matrix res;
-    allocate_matrix_consecutive(&n, 1, 2, 2);
-    allocate_matrix_zeros(&res, 1, 2, 2);
+    printf("m,n,k,time,flops\n");
 
-    matmul(&n, &n, &res);
+    for (int i = 0; i < num_sizes; i++) {
+        int M = sizes[i][0];
+        int N = sizes[i][1];
+        int K = sizes[i][2];
 
-    print_matrix(&n);
-    print_matrix(&res);
+        Matrix A;
+        Matrix B;
+        Matrix C;
 
-    Matrix o;
-    Matrix res2;
-    allocate_matrix_consecutive(&o, 1, 2, 1);
-    allocate_matrix_zeros(&res2, 1, 2, 3);
+        allocate_matrix_random(&A, 1, M, N);
+        allocate_matrix_random(&B, 1, N, K);
+        allocate_matrix_zeros(&C, 1, M, K);
 
-    matmul(&n, &o, &res2);
+        for (int iter = 0; iter < num_iterations; iter++) {
+            clock_gettime(CLOCK_MONOTONIC, &start);
 
-    print_matrix(&n);
-    print_matrix(&o);
-    print_matrix(&res2);
+            matmul_transpose(&A, &B, &C);
 
-    Matrix p;
-    Matrix res3;
-    allocate_matrix_consecutive(&p, 1, 1, 2);
-    allocate_matrix_zeros(&res3, 1, 3, 3);
+            clock_gettime(CLOCK_MONOTONIC, &end); 
 
-    matmul(&p, &o, &res3);
+            double time_taken = (end.tv_sec - start.tv_sec) + 
+                       (end.tv_nsec - start.tv_nsec) / 1e9;
+            double flops = 2.0 * M * N * K;
+            double flops_per_second = flops / time_taken / 1e9;  // Convert to gigaflops
 
-    print_matrix(&p);
-    print_matrix(&o);
-    print_matrix(&res3);
+            printf("%d,%d,%d,%.6f,%.2f\n", M, N, K, time_taken, flops_per_second);
+        }
 
-    Matrix a, b;
-    allocate_matrix_consecutive(&a, 1, 2, 2);
-    allocate_matrix_consecutive(&b, 1, 2, 2);
-    matmul_transpose(&a, &b, &res);
+        free_matrix(&A);
+        free_matrix(&B);
+        free_matrix(&C);
+    }
 
-    print_matrix(&a);
-    print_matrix(&b);
-    print_matrix(&res);
-
-    free_matrix(&a);
-    free_matrix(&b);
-    free_matrix(&res3);
-    free_matrix(&p);
-    free_matrix(&m);
-    free_matrix(&n);
-    free_matrix(&o);
-    free_matrix(&res);
-    free_matrix(&res2);
+    return 0;
 }

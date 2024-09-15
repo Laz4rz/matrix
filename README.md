@@ -8,6 +8,8 @@ A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), 
 
 ## Performance
 
+#### Theoritical Limit
+
 #### Baseline 
 - Numpy (multithreaded, M2 Pro): 
 ```
@@ -21,16 +23,36 @@ A [gem of knowledge](https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf), 
 (512, 512, 512): 100.50 +/- 8.87 GFLOPS
 (1024, 1024, 1024): 104.77 +/- 2.32 GFLOPS
 ```
+- Numpy (multithreaded, Ryzen 3600): 
+```
+Average FLOPS | (10x100 iterations) | multithreaded=True:
+(128, 128, 128): 113.38 +/- 50.58 GFLOPS
+(512, 512, 512): 30.59 +/- 14.48 GFLOPS
+(1024, 1024, 1024): 112.05 +/- 20.51 GFLOPS
+```
+- Numpy (single thread, Ryzen 3600):
+```
+(128, 128, 128): 89.12 +/- 0.66 GFLOPS
+(512, 512, 512): 107.86 +/- 2.25 GFLOPS
+(1024, 1024, 1024): 106.82 +/- 1.46 GFLOPS
+```
+
 
 #### Naive
 - Python (matrix.py): ~0.0004 GFLOPS (Ryzen 3600), ~0.0010 (M2 Pro)
 - C      (matrix.c): 
-  - M2 Pro: ~0.31 GFLOPS (-O0), higher optimization breaks benchmarking
-  - Ryzen 3600: ~0.13 (-O0), ~0.55 (-O1), ~1.00-1.6 for small and 0.33 for large (-O2), ~1.9 small, 0.9 medium, 0.33 for large (-O3)
-
+    - Vanilla: 
+      - M2 Pro: ~0.31 GFLOPS (-O0), higher optimization breaks benchmarking
+      - Ryzen 3600: ~0.13 (-O0), ~0.55 (-O1), ~1.00-1.6 for small and 0.33 for large (-O2), ~1.9 small, 0.9 medium, 0.33 for large (-O3)
+    - Optimization: Transpose for row-major optimized access
+      - Ryzen 3600: ~0.45, 0.49, 0.49 (-O0), ~2.70, 2.58, 2.58 (-O1), same for -02, ~3.34, 2.65, 2.61 (-O3), 
+  
 #### Strassen:
 - C      (strassens.c):
-  - Ryzen 3600: ~0.43, 0.57, 0.65 GFLOPS (-O0), ~3.10, 3.45, 3.80 GFLOPS (-O1), ~3.80, 4.20, 4.90 GFLOPS (-O2)  
+    - Vanilla:
+      - Ryzen 3600: ~0.43, 0.57, 0.65 GFLOPS (-O0), ~3.10, 3.45, 3.80 GFLOPS (-O1), ~3.80, 4.20, 4.90 GFLOPS (-O3)  
+    - Optimization: Transpose for row-major optimized access
+      - Ryzen 3600: ~0.49, 0.61, 0.69 GFLOPS (-O0), ~3.23, 3.60, 4.20 GFLOPS (-O1), ~4.03, 4.70, 5.88 GFLOPS (-O3)
 
 
 ## Python
@@ -64,17 +86,17 @@ allocate_matrix_zeros(&C, 1, M, K);
 
 Naive benchmark:
 ```
-gcc -o matmul benchmarks/matmul_c.c -O0; ./matmul
+gcc -o matmul benchmarks/naive.c -O0; ./matmul
 ```
 
 Strassen benchmark:
 ```
-gcc -o strassen benchmarks/matmul_c_strassen.c -O0; ./strassen
+gcc -o strassen benchmarks/strassen.c -O0; ./strassen
 ```
 
 Profiling:
 ```
-gcc -pg -o strassen benchmarks/matmul_c_strassen.c -O0; ./strassen
+gcc -pg -o strassen benchmarks/strassen.c -O0; ./strassen
 gprof strassens gmon.out
 ```
 
@@ -166,3 +188,4 @@ So the typical time complexity of matrix multiplication is $O(n^3)$, divide and 
 - Efficient matmul on CPU: https://www.cs.utexas.edu/~flame/pubs/GotoTOMS_final.pdf
 - SIMD intro: https://www.codeproject.com/Articles/874396/Crunching-Numbers-with-AVX-and-AVX
 - ARM instructions (suppossedly M series too): https://developer.arm.com/documentation/dui0801/l/A64-SIMD-Vector-Instructions/A64-SIMD-Vector-instructions-in-alphabetical-order
+- amazing website as a whole: https://en.algorithmica.org/hpc/cpu-cache/associativity/
