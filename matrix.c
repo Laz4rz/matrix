@@ -141,6 +141,41 @@ void matmul_transpose(Matrix *a, Matrix *b, Matrix *res) {
     }
 }
 
+void zero_matrix(Matrix *m) {
+    for (int i = 0; i < m->length; i++) {
+        m->data[i] = 0.0f;
+    }
+}
+
+// setting the tille size to 32, as Ryzen 3600 could hold ~52x52, but we need a power of 2
+// and the closest power of 2 is 32
+void matmul_transpose_tiled(Matrix *a, Matrix *b, Matrix *res, int tile_size) {
+    transpose_inplace(b);  
+    // zero_matrix(res);      
+
+    if (tile_size > a->rows || tile_size > b->cols) {
+        tile_size = a->rows;
+    }
+
+    for (int d = 0; d < a->depth; d++) {
+        for (int r = 0; r < a->rows; r += tile_size) {
+            for (int c = 0; c < b->cols; c += tile_size) {
+                for (int rr = r; rr < r + tile_size; rr++) {      
+                    for (int cc = c; cc < c + tile_size; cc++) {  
+                        float sum = 0.0f;
+                        for (int ii = 0; ii < tile_size; ii++) {   
+                            sum += a->data[d * a->rows * a->cols + rr * a->cols + ii] * 
+                                   b->data[d * b->rows * b->cols + cc * b->cols + ii];
+                        }
+                        
+                        res->data[d * res->rows * res->cols + rr * res->cols + cc] += sum;
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 int main() {
     Matrix m;
@@ -182,10 +217,11 @@ int main() {
     print_matrix(&o);
     print_matrix(&res3);
 
+    printf("Im testing:\n");
     Matrix a, b;
     allocate_matrix_consecutive(&a, 1, 2, 2);
     allocate_matrix_consecutive(&b, 1, 2, 2);
-    matmul_transpose(&a, &b, &res);
+    matmul_transpose_tiled(&a, &b, &res, 32);
 
     print_matrix(&a);
     print_matrix(&b);

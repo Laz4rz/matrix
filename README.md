@@ -60,7 +60,8 @@ Average FLOPS | (10x100 iterations) | multithreaded=True:
       - Ryzen 3600: ~0.43, 0.57, 0.65 GFLOPS (-O0), ~3.10, 3.45, 3.80 GFLOPS (-O1), ~3.80, 4.20, 4.90 GFLOPS (-O3)  
     - Optimization: Transpose for row-major optimized access
       - Ryzen 3600: ~0.49, 0.61, 0.69 GFLOPS (-O0), ~3.23, 3.60, 4.20 GFLOPS (-O1), ~4.03, 4.70, 5.88 GFLOPS (-O3)
-
+    - Optimization: Transpose + Tiling for squeezing tiny matrices in CPU Cache
+      - Ryzen 3600: ~0.90, 1.04, 1.20 GFLOPS (-O0), ~4.75, 4.63, 5.77 GFLOPS (-O1), ~9.37, 9.94, 12.01 GFLOPS (-O3)
 
 ## Python
 
@@ -183,6 +184,64 @@ Each sample counts as 0.01 seconds.
   0.00      3.61     0.00     9621     0.00     0.00  allocate_matrix_zeros
   0.00      3.61     0.00        3     0.00     1.20  strassens
 ```
+
+#### Hello sir, my tile is trolling
+
+So I wanted to get better caching with tiled matmul. And well it didn't work, about 30% performance drop...
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 91.32     29.03    29.03    13755     0.00     0.00  matmul_transpose_tiled
+  3.59     30.17     1.14    25190     0.00     0.00  add
+  2.49     30.96     0.79    16030     0.00     0.00  sub
+  1.01     31.28     0.32     4580     0.00     0.00  split
+  0.98     31.59     0.31    13755     0.00     0.00  transpose_inplace
+  0.53     31.76     0.17    13755     0.00     0.00  zero_matrix
+  0.09     31.79     0.03     2290     0.00     0.00  combine
+  0.00     31.79     0.00    48099     0.00     0.00  free_matrix
+  0.00     31.79     0.00    48093     0.00     0.00  allocate_matrix_zeros
+  0.00     31.79     0.00       15     0.00     2.12  strassens
+  0.00     31.79     0.00        6     0.00     0.00  allocate_matrix_random
+```
+
+Compared to just transposed strassen:
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 86.05     14.99    14.99    13755     0.00     0.00  matmul_transpose
+  5.45     15.94     0.95    25190     0.00     0.00  add
+  3.96     16.63     0.69    16030     0.00     0.00  sub
+  2.64     17.09     0.46     4580     0.00     0.00  split
+  1.32     17.32     0.23    13755     0.00     0.00  transpose_inplace
+  0.52     17.41     0.09     2290     0.00     0.00  combine
+  0.06     17.42     0.01        6     0.00     0.00  allocate_matrix_random
+  0.00     17.42     0.00    48099     0.00     0.00  free_matrix
+  0.00     17.42     0.00    48093     0.00     0.00  allocate_matrix_zeros
+  0.00     17.42     0.00       15     0.00     1.16  strassens
+```
+
+Turns out that the one of few times I trusted SlopGPT generated code, I got misguided. We kind of assume here that a). we always have square matrices b). their shapes match, c). shape is a power of 2. This is quite a lot of assumptions. But we have a Need for Speed here, and speed is Most Wanted. Ergo, we don't care about real life where matrices usually don't fit these requirements. SlopGPT added 1. check if tile_size > size at each iteration, 2. additional loop for inner dim. Look what happens when we remove it, and come back to our perfect little square, matching, power of 2 world:
+```
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 73.07      7.46     7.46    13755     0.54     0.57  matmul_transpose_tiled
+ 10.87      8.57     1.11    25190     0.04     0.04  add
+  6.17      9.20     0.63    16030     0.04     0.04  sub
+  5.29      9.74     0.54     4580     0.12     0.12  split
+  2.64     10.01     0.27    13755     0.02     0.02  transpose_inplace
+  1.47     10.16     0.15    13755     0.01     0.01  zero_matrix
+  0.39     10.20     0.04     2290     0.02     0.02  combine
+  0.10     10.21     0.01        6     1.67     1.67  allocate_matrix_random
+  0.00     10.21     0.00    48099     0.00     0.00  free_matrix
+  0.00     10.21     0.00    48093     0.00     0.00  allocate_matrix_zeros
+  0.00     10.21     0.00       15     0.00   680.00  strassens
+```
+
+Yessss, that's more like it. Now we are almost 200% faster, landing at 0.89 GFLOPS for small matrices and -O0.
+
 
 ## Strassens Algorithm for Matrix Multiplication (or how to cheat complexity with clever algebra)
 
